@@ -72,8 +72,8 @@ Placeholders are included in `docs/screenshots/`. Replace them with real screens
 
 - Login / Signup: ![Login](/docs/screenshots/login.png)
 - Dashboard (overview): ![Dashboard](/docs/screenshots/dashboard.png)
-- Dashboard (overview): ![Dashboard](/docs/screenshots/dashboard-1.png)
-- Dashboard (overview): ![Dashboard](/docs/screenshots/dashboard-2.png)
+- Dashboard (overview): ![Dashboard](/docs/screenshots/Dashboard-1.png)
+- Dashboard (overview): ![Dashboard](/docs/screenshots/Dashboard-2.png)
 - Charts / Table: ![Charts](/docs/screenshots/charts.png)
 
 ## How to add real screenshots
