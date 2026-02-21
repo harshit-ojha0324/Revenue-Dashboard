@@ -61,16 +61,6 @@ I reviewed and fixed several issues before this commit:
 - Replaced `.remove()` usages with `findByIdAndDelete` to avoid runtime errors.
 - Simplified frontend 401 handling to rely on status codes.
 
-Files changed (high level):
-
-- `server/models/User.js`
-- `server/controllers/userController.js`
-- `server/controllers/authController.js`
-- `server/controllers/salesController.js`
-- `server/middleware/auth.js`
-- `server/index.js`
-- `server/config/default.js`
-- `src/utils/api.js`
 
 ## Running integration checks
 
