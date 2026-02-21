@@ -1,4 +1,4 @@
-# 📊 Sales Dashboard
+# 📊 Revenue Dashboard
 
 A full-stack sales analytics dashboard built with **React**, **Express**, and **MongoDB**. Track revenue, monitor sales performance across regions and categories, and visualize trends through interactive charts — all behind a secure authentication layer.
 
