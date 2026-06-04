@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getUserProfile } from './redux/slices/authSlice';
+import api from './utils/api';
 
 // Components
 import Dashboard from './components/Dashboard/Dashboard';
@@ -14,17 +15,23 @@ import Spinner from './components/UI/Spinner';
 
 function App() {
   const dispatch = useDispatch();
-  const { isAuthenticated, isLoading, token } = useSelector(state => state.auth);
+  const { isAuthenticated, authChecked } = useSelector(state => state.auth);
 
   useEffect(() => {
-    // Check if user is authenticated by token
-    if (token) {
+    // Prime the CSRF cookie, then verify the session via the httpOnly cookie.
+    const init = async () => {
+      try {
+        await api.get('/auth/csrf');
+      } catch (e) {
+        /* CSRF priming is best-effort; the first response also sets it */
+      }
       dispatch(getUserProfile());
-    }
-  }, [dispatch, token]);
+    };
+    init();
+  }, [dispatch]);
 
-  // Show loading spinner while checking authentication
-  if (isLoading && token) {
+  // Show a full-screen spinner only during the initial session check
+  if (!authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
         <Spinner size="large" color="blue" />

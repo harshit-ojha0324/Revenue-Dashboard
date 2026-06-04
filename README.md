@@ -1,102 +1,184 @@
-Sales Dashboard
+# Sales Dashboard
 
-Full-stack Sales Dashboard (React frontend + Express/Mongo backend).
+A full-stack **MERN** sales analytics dashboard. Users register, log in, record sales, and view live KPIs, charts, and a paginated, filterable sales table. Authentication is JWT-based using **httpOnly cookies** with **CSRF protection**, and access is **role-based** (regular users see only their own sales; admins see everything).
 
-This repository contains a simple sales dashboard backend and frontend used for tracking sales, users, and basic analytics.
+> Built as a portfolio project to demonstrate full-stack architecture, secure authentication, REST API design, and data visualization.
 
----
+## Tech Stack
 
-## Quick Start
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 18, Redux Toolkit, React Router 6, Recharts, Tailwind CSS |
+| Backend | Node.js, Express 4 |
+| Database | MongoDB with Mongoose 7 |
+| Auth | JSON Web Tokens in httpOnly cookies, bcrypt password hashing, double-submit CSRF tokens |
+| Tooling | Create React App, ESLint, Docker / docker-compose, GitHub Actions CI |
 
-- Install dependencies:
+## Screenshots
+
+> The images below are placeholders in `docs/screenshots/`. Replace them with real captures (keep the same filenames) to have them render here.
+
+| Login / Signup | Dashboard | Charts & Table |
+| --- | --- | --- |
+| ![Login](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) | ![Charts](docs/screenshots/charts.png) |
+
+## Features
+
+- Email/password authentication with hashed passwords (bcrypt) and JWTs stored in httpOnly cookies.
+- CSRF protection via the double-submit cookie pattern on all state-changing requests.
+- Role-based authorization (`user` vs `admin`) enforced in middleware and reflected in the UI.
+- Full CRUD for sales records with ownership checks.
+- Filtering (category, region, payment method, date range), sorting, and pagination.
+- Aggregated analytics endpoint powering KPI cards plus category, region, payment-method, and 12-month trend charts.
+- Centralized error handling and a consistent JSON response envelope.
+- Dark mode and responsive layout.
+- Optional live demo seeder (node-cron) that generates evolving sales on a schedule, so a deployed instance keeps changing on its own.
+- `/health` endpoint for uptime monitoring and platform health checks.
+
+## Architecture
+
+### Authentication flow
+
+1. On register/login the server signs a JWT (`{ id, role }`) and sets it as an **httpOnly** cookie (`token`). The token is never exposed to JavaScript, mitigating XSS token theft.
+2. The `protect` middleware reads the JWT from the cookie (falling back to an `Authorization: Bearer` header so API clients like Postman still work), verifies it, and loads the user.
+3. `authorize('admin')` gates admin-only routes.
+4. **CSRF:** the server issues a readable `csrfToken` cookie; the SPA echoes it back in an `X-CSRF-Token` header on every mutating request, and `verifyCsrf` confirms the two match.
+5. The React app determines auth state on load by calling `GET /api/auth/me` (the cookie travels automatically with `withCredentials`).
+
+### Data models
+
+- **User** — `name`, `email` (unique), `role` (`user` | `admin`), `password` (hashed, `select: false`).
+- **Sale** — `orderId`, `product`, `category`, `price`, `quantity`, `totalAmount`, `date`, `region`, `paymentMethod`, `customer` → User, `createdBy` → User. Indexed on `{ customer, date }`, with a `profit` virtual.
+
+### Project structure
+
+```
+server/
+  config/        # db connection
+  controllers/   # auth, sales, user business logic
+  jobs/          # live demo seeder (node-cron)
+  middleware/    # auth (protect/authorize), csrf, asyncHandler, errorHandler
+  models/        # Mongoose schemas
+  routes/        # Express routers
+  utils/         # shared sample data, cookie options
+  index.js       # app entry
+  seed.js        # interactive data seeder
+src/
+  components/    # UI (Auth, Dashboard, Charts, etc.)
+  redux/         # store + slices (auth, sales, ui)
+  hooks/         # useDashboardData
+  utils/         # api client, formatters, chart helpers
+public/          # static assets
+scripts/         # smoke-test.js (end-to-end API check)
+```
+
+## API Reference
+
+All `/api/sales` and `/api/users` routes require authentication. `/api/users` additionally requires the `admin` role.
+
+| Method | Endpoint | Description | Access |
+| --- | --- | --- | --- |
+| GET | `/health` | Health check (status + uptime) | Public |
+| GET | `/api/auth/csrf` | Issue a CSRF token | Public |
+| POST | `/api/auth/register` | Register and receive auth cookie | Public |
+| POST | `/api/auth/login` | Log in and receive auth cookie | Public |
+| GET | `/api/auth/me` | Current user | Private |
+| POST | `/api/auth/logout` | Clear auth cookie | Private |
+| GET | `/api/sales` | List sales (filter/sort/paginate) | Private |
+| GET | `/api/sales/stats` | Aggregated dashboard stats | Private |
+| GET | `/api/sales/:id` | Single sale | Private (owner/admin) |
+| POST | `/api/sales` | Create sale | Private |
+| PUT | `/api/sales/:id` | Update sale | Private (owner/admin) |
+| DELETE | `/api/sales/:id` | Delete sale | Private (owner/admin) |
+| GET | `/api/users` | List users | Admin |
+| POST | `/api/users` | Create user | Admin |
+| GET | `/api/users/:id` | Single user | Admin |
+| PUT | `/api/users/:id` | Update user | Admin |
+| DELETE | `/api/users/:id` | Delete user | Admin |
+| GET | `/api/users/:id/sales` | A user's sales | Admin |
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- A MongoDB instance (local, or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
+
+### 1. Install
 
 ```bash
 npm install
 ```
 
-- Run the backend server:
+### 2. Configure environment
 
-```bash
-# Starts the Node server on port 5001
-npm run server
-```
-
-- Run the frontend (in another terminal):
-
-```bash
-# Starts CRA dev server on port 3000
-npm start
-```
-
-## Environment Variables
-
-Create a `.env` file in the `server/` folder (or set system env vars) with at least:
+Create `server/.env` (see `server/.env.example`):
 
 ```
+NODE_ENV=development
 PORT=5001
 MONGO_URI=mongodb://localhost:27017/sales-dashboard
-JWT_SECRET=your_jwt_secret_here
+JWT_SECRET=replace_with_a_long_random_string
 JWT_EXPIRE=30d
 JWT_COOKIE_EXPIRE=30
 CORS_ORIGIN=http://localhost:3000
 ```
 
-Note: Do NOT commit production credentials. The repository no longer contains any production DB credentials.
+The frontend reads its API URL from `.env.development` / `.env.production` (`REACT_APP_API_URL`).
 
-## Project Structure
+> **Never commit real secrets.** `server/.env` is gitignored. Generate a strong `JWT_SECRET`, e.g. `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
 
-- `server/` — Express API, Mongoose models, controllers, middleware
-- `src/` — React frontend (components, redux, utils)
-- `public/` — static assets for frontend
+### 3. Seed data (optional)
 
-## Important Notes & Changes
+```bash
+npm run seed
+```
 
-I reviewed and fixed several issues before this commit:
+### 4. Run
 
-- Fixed `User` pre-save hook to correctly return early and handle errors so passwords are hashed reliably.
-- Updated `updateUser` to load the document and call `save()` (ensures pre-save hooks run when updating password).
-- Hardened `protect` auth middleware to ensure the user still exists after token verification.
-- `sendTokenResponse` now sets a cookie (`token`) in addition to returning token in JSON; cookie expiry parsing is safer.
-- Tightened CORS defaults and removed hardcoded DB credentials from the config.
-- Replaced `.remove()` usages with `findByIdAndDelete` to avoid runtime errors.
-- Simplified frontend 401 handling to rely on status codes.
+```bash
+# Backend (port 5001) and frontend (port 3000) together
+npm run dev
 
-Files changed (high level):
+# or separately
+npm run server
+npm start
+```
 
-- `server/models/User.js`
-- `server/controllers/userController.js`
-- `server/controllers/authController.js`
-- `server/controllers/salesController.js`
-- `server/middleware/auth.js`
-- `server/index.js`
-- `server/config/default.js`
-- `src/utils/api.js`
+## Available Scripts
 
-## Running integration checks
+| Script | Description |
+| --- | --- |
+| `npm run dev` | Run backend + frontend concurrently |
+| `npm run server` | Run the Express API |
+| `npm start` | Run the React dev server |
+| `npm run build` | Production build of the frontend |
+| `npm run seed` | Seed users and sales |
+| `npm run lint` | Lint the codebase |
+| `npm test` | Run tests |
 
-I ran basic integration checks locally (register, login, create/update/delete sale) which succeeded.
+With the backend running, `node scripts/smoke-test.js` exercises the full API end to end (register → login → create/list/delete sale → stats, plus CSRF and auth guard checks).
 
-## Screenshots
+## Deployment
 
-Placeholders are included in `docs/screenshots/`. Replace them with real screenshots (same filenames) if desired.
+The app runs entirely on free tiers: **MongoDB Atlas** (database), **Render** (Express API), and **Vercel** (React frontend). Because the frontend and API are on different domains, auth cookies are sent cross-site as `SameSite=None; Secure` in production — this is handled in code, you just set the env vars.
 
-- Login / Signup: ![Login](/docs/screenshots/login.png)
-- Dashboard (overview): ![Dashboard](/docs/screenshots/dashboard.png)
-- Charts / Table: ![Charts](/docs/screenshots/charts.png)
+Key configuration: set `CORS_ORIGIN` (on the API) to the deployed frontend URL, and `REACT_APP_API_URL` (on the frontend) to the deployed API URL. Render's free web service cold-starts after ~15 minutes idle; an uptime pinger against `/health` keeps it warm so the live seeder keeps running.
 
-## How to add real screenshots
+Repo includes `render.yaml` (API blueprint) and `vercel.json` (frontend config). **See [DEPLOYMENT.md](DEPLOYMENT.md) for the full step-by-step walkthrough.**
 
-1. Create a `docs/screenshots/` directory at the repo root.
-2. Save screenshots as `login.svg`, `dashboard.svg`, `charts.svg` (or use PNG/JPEG but update README links).
-3. Commit the images alongside the README.
+### Live demo seeder
 
-## Security & Deployment Recommendations
+Set `ENABLE_LIVE_SEED=true` to have the API insert a few fresh sales every couple of minutes (configurable via `SEED_CRON`), attributed to a dedicated demo account, so a deployed instance visibly changes over time. The dataset self-trims at `SEED_MAX_SALES` to stay within the free Atlas tier. See `server/.env.example` for all seeder options.
 
-- Use environment variables for all secrets, and store them securely (Vault, cloud secrets manager, or CI secret store).
-- Serve the frontend from a trusted domain and set `CORS_ORIGIN` to that domain in production.
-- Store auth tokens in secure, httpOnly cookies (already set by server) and avoid localStorage for sensitive tokens.
-- Rotate `JWT_SECRET` if it was exposed and enforce strong secret values.
+## Security Notes
 
----
+- JWTs are stored in httpOnly cookies (`SameSite=Lax` in dev, `SameSite=None; Secure` in production for cross-site requests) — never in `localStorage`.
+- All mutating requests are CSRF-protected via the double-submit cookie pattern.
+- Passwords are hashed with bcrypt and never returned by the API.
+- CORS is locked to a configured origin with credentials enabled.
+- All secrets are supplied via environment variables.
 
-If you want, I can commit these changes and open a PR. I can also replace the SVG placeholders with real PNG screenshots if you provide them or allow me to capture them locally.
+## License
+
+Released for portfolio/demo purposes.

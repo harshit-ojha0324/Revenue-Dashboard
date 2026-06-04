@@ -5,12 +5,14 @@ const User = require('../models/User');
 exports.protect = async (req, res, next) => {
   let token;
 
-  // Check if token exists in headers
-  if (
+  // Prefer the httpOnly auth cookie (set on login/register).
+  if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  } else if (
+    // Fall back to a Bearer header so API clients (Postman/curl) still work.
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
-    // Set token from Bearer token
     token = req.headers.authorization.split(' ')[1];
   }
 

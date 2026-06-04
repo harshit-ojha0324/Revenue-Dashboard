@@ -1,0 +1,35 @@
+# Render Blueprint for the Sales Dashboard API.
+# Deploy by pushing to GitHub, then in Render: New > Blueprint and pick this repo.
+# Secrets (MONGO_URI, JWT_SECRET, etc.) are marked sync:false — set them in the
+# Render dashboard, never commit them.
+services:
+  - type: web
+    name: sales-dashboard-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      - key: JWT_EXPIRE
+        value: 30d
+      - key: JWT_COOKIE_EXPIRE
+        value: 30
+      # Live demo seeder — on for the deployed demo so data keeps evolving.
+      - key: ENABLE_LIVE_SEED
+        value: "true"
+      - key: SEED_CRON
+        value: "*/2 * * * *"
+      # --- Secrets / per-environment values: set these in the dashboard ---
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false # e.g. https://your-frontend.vercel.app
+      - key: SEED_DEMO_PASSWORD
+        sync: false

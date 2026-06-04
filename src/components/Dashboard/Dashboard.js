@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getSales, getSalesStats } from '../../redux/slices/salesSlice';
+import { useSelector } from 'react-redux';
+import useDashboardData from '../../hooks/useDashboardData';
 
 import Header from '../Header/Header';
 import Sidebar from '../Header/Sidebar';
@@ -17,24 +17,19 @@ import DataTable from '../Charts/DataTable';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const dispatch = useDispatch();
   const { sidebarOpen, darkMode } = useSelector(state => state.ui);
-  const { salesStats, salesData, isLoading, error } = useSelector(state => state.sales);
+
+  // Fetches sales + stats on mount and exposes refresh/pagination helpers.
+  const { salesStats, salesData, isLoading, error } = useDashboardData();
 
   useEffect(() => {
-    // Apply dark mode to body
+    // Apply dark mode to the document root
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
-
-  useEffect(() => {
-    // Fetch data when component mounts
-    dispatch(getSales());
-    dispatch(getSalesStats());
-  }, [dispatch]);
 
   return (
     <div className={`min-h-screen flex flex-col ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>

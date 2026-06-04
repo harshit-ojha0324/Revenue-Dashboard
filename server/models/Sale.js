@@ -1,11 +1,23 @@
 const mongoose = require('mongoose');
 
+// Generate a human-readable order id: 2 uppercase letters + 6 digits (e.g. "AB123456").
+const generateOrderId = () => {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const prefix =
+    letters[Math.floor(Math.random() * letters.length)] +
+    letters[Math.floor(Math.random() * letters.length)];
+  const digits = String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
+  return `${prefix}${digits}`;
+};
+
 const SaleSchema = new mongoose.Schema({
   orderId: {
     type: String,
     required: true,
     unique: true,
-    trim: true
+    trim: true,
+    // Auto-generate when not supplied so the API and seeder both work.
+    default: generateOrderId
   },
   product: {
     type: String,
@@ -60,6 +72,10 @@ const SaleSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+}, {
+  // Include virtuals (e.g. `profit`) when documents are serialized
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Create a compound index for better query performance

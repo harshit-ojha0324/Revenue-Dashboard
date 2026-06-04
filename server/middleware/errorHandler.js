@@ -27,6 +27,9 @@ const errorHandler = (err, req, res, _next) => {
   
     res.status(error.status || 500).json({
       success: false,
+      // `message` keeps the shape consistent with the controllers; `error`
+      // is retained for any older clients that read it.
+      message: error.message || 'Server Error',
       error: error.message || 'Server Error'
     });
   };
