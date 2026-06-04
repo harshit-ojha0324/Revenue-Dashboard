@@ -31,9 +31,25 @@ A full-stack **MERN** sales analytics dashboard. Users register, log in, record 
 - Filtering (category, region, payment method, date range), sorting, and pagination.
 - Aggregated analytics endpoint powering KPI cards plus category, region, payment-method, and 12-month trend charts.
 - Centralized error handling and a consistent JSON response envelope.
-- Dark mode and responsive layout.
+- Dark mode and responsive layout with a collapsible sidebar (in-flow on desktop, slide-over with backdrop on mobile).
 - Optional live demo seeder (node-cron) that generates evolving sales on a schedule, so a deployed instance keeps changing on its own.
 - `/health` endpoint for uptime monitoring and platform health checks.
+
+## Application pages
+
+The SPA uses nested routing (React Router 6) under a shared authenticated layout. Regular users get the `/dashboard` section; admins additionally get `/admin`.
+
+| Route | Page | Access |
+| --- | --- | --- |
+| `/dashboard` | Overview — KPI cards, trend/category/region/payment charts, recent sales | Private |
+| `/dashboard/sales` | Sales — create/edit/delete records (modal form), filters, server-side pagination | Private |
+| `/dashboard/analytics` | Analytics — cumulative revenue, 6-mo-vs-prior growth, trend and breakdown charts | Private |
+| `/dashboard/customers` | Customers — sales aggregated per customer (orders, total spent, average, last order) | Private |
+| `/dashboard/profile` | Profile — account details | Private |
+| `/dashboard/settings` | Settings — appearance/dark-mode preferences | Private |
+| `/admin` | Admin Dashboard — organization-wide KPIs and charts across all users | Admin |
+| `/admin/users` | User Management — create/edit/delete user accounts | Admin |
+| `/admin/sales` | Sales Management — all users' sales with a customer/owner column | Admin |
 
 ## Architecture
 
@@ -64,8 +80,11 @@ server/
   index.js       # app entry
   seed.js        # interactive data seeder
 src/
-  components/    # UI (Auth, Dashboard, Charts, etc.)
-  redux/         # store + slices (auth, sales, ui)
+  components/    # UI: Auth, Layout (DashboardLayout), Header/Sidebar, Charts,
+                 #     Filters, KPICards, Sales (SaleFormModal), Users (UserFormModal), UI
+  pages/         # routed pages (DashboardHome, Sales, Analytics, Customers,
+                 #     Profile, Settings, Admin*, plus Login/Signup/404/Unauthorized)
+  redux/         # store + slices (auth, sales, ui, users)
   hooks/         # useDashboardData
   utils/         # api client, formatters, chart helpers
 public/          # static assets

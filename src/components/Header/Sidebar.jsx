@@ -1,17 +1,32 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { toggleSidebar } from '../../redux/slices/uiSlice';
 
 const Sidebar = () => {
+  const dispatch = useDispatch();
   const { sidebarOpen } = useSelector(state => state.ui);
   const { user } = useSelector(state => state.auth);
-  
+
   // Check if user is admin
   const isAdmin = user && user.role === 'admin';
-  
+
+  // On mobile, tapping a nav link should close the overlay sidebar.
+  const handleNavClick = (e) => {
+    if (e.target.closest('a') && window.innerWidth < 768 && sidebarOpen) {
+      dispatch(toggleSidebar());
+    }
+  };
+
   return (
-    <aside className={`bg-gray-800 text-white w-64 min-h-screen p-4 transition-all duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:static z-20`}>
-      <div className="flex flex-col h-full">
+    <aside
+      className={`bg-gray-800 text-white p-4 transition-all duration-300 z-30 fixed inset-y-0 left-0 md:static md:inset-y-auto overflow-y-auto ${
+        sidebarOpen
+          ? 'translate-x-0 w-64'
+          : '-translate-x-full w-64 md:translate-x-0 md:w-0 md:p-0 md:overflow-hidden'
+      }`}
+    >
+      <div className={`flex flex-col h-full ${sidebarOpen ? '' : 'md:hidden'}`} onClick={handleNavClick}>
         <div className="py-4">
           <h2 className="text-2xl font-bold mb-6 text-blue-400">Sales Dashboard</h2>
           

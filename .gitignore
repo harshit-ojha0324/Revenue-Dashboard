@@ -64,6 +64,10 @@ logs
 # Screenshot automation
 /scripts/capture_screenshots.js
 
+# Personal study / interview prep (kept local, not pushed)
+/LEARNING.md
+/INTERVIEW_PREP.md
+
 # Test credentials and temporary files
 /tmp/login.json
 
