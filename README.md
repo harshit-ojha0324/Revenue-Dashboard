@@ -8,11 +8,11 @@ A full-stack **MERN** sales analytics dashboard. Users register, log in, record 
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | React 18, Redux Toolkit, React Router 6, Recharts, Tailwind CSS |
+| Frontend | React 18 (Vite), Redux Toolkit, React Router 6, Recharts, Tailwind CSS |
 | Backend | Node.js, Express 4 |
 | Database | MongoDB with Mongoose 7 |
 | Auth | JSON Web Tokens in httpOnly cookies, bcrypt password hashing, double-submit CSRF tokens |
-| Tooling | Create React App, ESLint, Docker / docker-compose, GitHub Actions CI |
+| Tooling | Vite, ESLint, Docker / docker-compose, GitHub Actions CI |
 
 ## Screenshots
 
@@ -124,7 +124,7 @@ JWT_COOKIE_EXPIRE=30
 CORS_ORIGIN=http://localhost:3000
 ```
 
-The frontend reads its API URL from `.env.development` / `.env.production` (`REACT_APP_API_URL`).
+The frontend reads its API URL from `.env.development` / `.env.production` (`VITE_API_URL`). Vite only exposes variables prefixed with `VITE_` to the browser build.
 
 > **Never commit real secrets.** `server/.env` is gitignored. Generate a strong `JWT_SECRET`, e.g. `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
 
@@ -137,7 +137,7 @@ npm run seed
 ### 4. Run
 
 ```bash
-# Backend (port 5001) and frontend (port 3000) together
+# Backend (port 5001) and frontend Vite dev server (port 3000) together
 npm run dev
 
 # or separately
@@ -151,8 +151,9 @@ npm start
 | --- | --- |
 | `npm run dev` | Run backend + frontend concurrently |
 | `npm run server` | Run the Express API |
-| `npm start` | Run the React dev server |
-| `npm run build` | Production build of the frontend |
+| `npm start` | Run the Vite dev server |
+| `npm run build` | Production build of the frontend (outputs to `dist/`) |
+| `npm run preview` | Preview the production build locally |
 | `npm run seed` | Seed users and sales |
 | `npm run lint` | Lint the codebase |
 | `npm test` | Run tests |
@@ -163,7 +164,7 @@ With the backend running, `node scripts/smoke-test.js` exercises the full API en
 
 The app runs entirely on free tiers: **MongoDB Atlas** (database), **Render** (Express API), and **Vercel** (React frontend). Because the frontend and API are on different domains, auth cookies are sent cross-site as `SameSite=None; Secure` in production — this is handled in code, you just set the env vars.
 
-Key configuration: set `CORS_ORIGIN` (on the API) to the deployed frontend URL, and `REACT_APP_API_URL` (on the frontend) to the deployed API URL. Render's free web service cold-starts after ~15 minutes idle; an uptime pinger against `/health` keeps it warm so the live seeder keeps running.
+Key configuration: set `CORS_ORIGIN` (on the API) to the deployed frontend URL, and `VITE_API_URL` (on the frontend) to the deployed API URL. Render's free web service cold-starts after ~15 minutes idle; an uptime pinger against `/health` keeps it warm so the live seeder keeps running.
 
 Repo includes `render.yaml` (API blueprint) and `vercel.json` (frontend config). **See [DEPLOYMENT.md](DEPLOYMENT.md) for the full step-by-step walkthrough.**
 

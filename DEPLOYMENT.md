@@ -90,12 +90,12 @@ The repo includes a `render.yaml` blueprint, so this is mostly automatic.
 ## Step 4 — Deploy the frontend to Vercel
 
 1. Vercel dashboard > **Add New > Project** > import your GitHub repo.
-2. Vercel auto-detects Create React App (the repo also includes `vercel.json`). Keep the defaults (build `npm run build`, output `build`).
+2. Vercel auto-detects Vite (the repo also includes `vercel.json`). Keep the defaults (framework `Vite`, build `npm run build`, output `dist`).
 3. Add one **Environment Variable**:
 
    | Key | Value |
    |-----|-------|
-   | `REACT_APP_API_URL` | `https://sales-dashboard-api.onrender.com/api` |
+   | `VITE_API_URL` | `https://sales-dashboard-api.onrender.com/api` |
 
    (Use your actual Render URL, and keep the `/api` suffix.)
 

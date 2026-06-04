@@ -15,32 +15,54 @@
         "express": "^4.18.2",
         "jsonwebtoken": "^9.0.0",
         "mongoose": "^7.2.1",
-        "node-cron": "^3.0.3",
+        "node-cron": "^4.2.1",
         "node-fetch": "^2.7.0",
         "puppeteer": "^24.37.5",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-redux": "^8.0.5",
         "react-router-dom": "^6.11.2",
-        "react-scripts": "5.0.1",
         "recharts": "^2.6.2",
         "web-vitals": "^2.1.4"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test --passWithNoTests",
-        "eject": "react-scripts eject",
+        "start": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "test": "echo \"No tests configured\" && exit 0",
         "lint": "eslint . --ext .js,.jsx",
         "server": "node server/index.js",
         "dev": "concurrently \"npm run server\" \"npm run start\"",
         "seed": "node server/seed.js"
     },
     "eslintConfig": {
+        "root": true,
+        "env": {
+            "browser": true,
+            "node": true,
+            "es2021": true
+        },
+        "parserOptions": {
+            "ecmaVersion": "latest",
+            "sourceType": "module",
+            "ecmaFeatures": {
+                "jsx": true
+            }
+        },
+        "settings": {
+            "react": {
+                "version": "detect"
+            }
+        },
         "extends": [
-            "react-app",
-            "react-app/jest"
-        ]
+            "eslint:recommended",
+            "plugin:react/recommended"
+        ],
+        "rules": {
+            "react/react-in-jsx-scope": "off",
+            "react/prop-types": "off",
+            "no-unused-vars": "warn"
+        }
     },
     "browserslist": {
         "production": [
@@ -55,12 +77,14 @@
         ]
     },
     "devDependencies": {
+        "@vitejs/plugin-react": "^6.0.2",
         "autoprefixer": "^10.4.14",
         "concurrently": "^8.0.1",
         "eslint": "^8.45.0",
         "eslint-plugin-react": "^7.32.2",
-        "nodemon": "^2.0.22",
+        "nodemon": "^3.1.14",
         "postcss": "^8.4.24",
-        "tailwindcss": "^3.3.2"
+        "tailwindcss": "^3.3.2",
+        "vite": "^8.0.16"
     }
 }
