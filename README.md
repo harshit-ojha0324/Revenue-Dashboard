@@ -175,7 +175,7 @@ npm start
 | `npm run preview` | Preview the production build locally |
 | `npm run seed` | Seed users and sales |
 | `npm run lint` | Lint the codebase |
-| `npm test` | Run tests |
+| `npm test` | No-op placeholder (prints "No tests configured") — there is no unit-test suite yet; the real end-to-end check is `node scripts/smoke-test.js` |
 
 With the backend running, `node scripts/smoke-test.js` exercises the full API end to end (register → login → create/list/delete sale → stats, plus CSRF and auth guard checks).
 
